@@ -676,6 +676,16 @@
     pvApply.textContent = apply || '—';
   }
 
+  // ── Helpers ──
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]); // strip data:...;base64, prefix
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   // ── Post Job ──
   async function postJob() {
     setPosting(true);
@@ -690,18 +700,22 @@
     // Build ISO string with +06:30 offset
     const scheduleISO = `${dateVal}T${timeVal}:00+06:30`;
 
-    const form = new FormData();
-    form.append('image',         state.imageFile, state.imageFile.name);
-    form.append('job_title',     state.jobTitle);
-    form.append('jd_content',    jd);
-    form.append('channel2_link', ch2link);
-    form.append('apply_link',    applyLink);
-    form.append('schedule_time', scheduleISO);
+    // Convert image to base64
+    const image_base64 = await fileToBase64(state.imageFile);
 
     try {
       const res = await fetch(POST_WEBHOOK_URL, {
         method: 'POST',
-        body: form,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image_base64,
+          image_filename: state.imageFile.name,
+          job_title:      state.jobTitle,
+          jd_content:     jd,
+          channel2_link:  ch2link,
+          apply_link:     applyLink,
+          schedule_time:  scheduleISO,
+        }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
