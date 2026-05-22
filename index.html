@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chate Sat — Job Poster</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --green: #1a7a42;
+    --green-light: #e8f5ee;
+    --green-dark: #145e33;
+    --red: #dc2626;
+    --red-light: #fef2f2;
+    --orange: #ea580c;
+    --yellow: #ca8a04;
+    --blue: #2563eb;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --border: 1px solid var(--gray-200);
+    --radius: 6px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 14px;
+    color: var(--gray-900);
+    background: var(--gray-100);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Topbar ── */
+  #topbar {
+    background: #fff;
+    border-bottom: var(--border);
+    padding: 0 24px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  #topbar .logo {
+    width: 32px;
+    height: 32px;
+    background: var(--green);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.5px;
+  }
+  #topbar h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+
+  /* ── Main ── */
+  #main {
+    display: flex;
+    flex: 1;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* ── Panels ── */
+  .panel {
+    background: #fff;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  #left-panel {
+    flex: 1;
+    border-right: var(--border);
+  }
+  #right-panel {
+    width: 380px;
+    flex-shrink: 0;
+  }
+
+  /* ── Section headers ── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-500);
+    margin-bottom: 10px;
+  }
+
+  /* ── Form elements ── */
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 5px;
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 4px;
+  }
+  input[type="text"],
+  input[type="url"],
+  input[type="date"],
+  input[type="time"],
+  textarea {
+    width: 100%;
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--gray-900);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="text"]:focus,
+  input[type="url"]:focus,
+  input[type="date"]:focus,
+  input[type="time"]:focus,
+  textarea:focus {
+    border-color: var(--green);
+  }
+  input:disabled, textarea:disabled {
+    background: var(--gray-50);
+    color: var(--gray-400);
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s, opacity 0.15s;
+    white-space: nowrap;
+  }
+  .btn-green {
+    background: var(--green);
+    color: #fff;
+  }
+  .btn-green:hover:not(:disabled) { background: var(--green-dark); }
+  .btn-green:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-outline {
+    background: #fff;
+    color: var(--gray-700);
+    border: var(--border);
+  }
+  .btn-outline:hover { background: var(--gray-50); }
+
+  /* ── Fetch row ── */
+  #fetch-row {
+    display: flex;
+    gap: 8px;
+  }
+  #fetch-row input { flex: 1; }
+  #fetch-btn { flex-shrink: 0; }
+
+  /* ── Info block ── */
+  #info-block {
+    display: none;
+    border: var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    background: var(--gray-50);
+    gap: 10px;
+    flex-direction: column;
+  }
+  #info-block.visible { display: flex; }
+  #job-title-display {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-urgent   { background: #fee2e2; color: var(--red); }
+  .badge-normal   { background: #ffedd5; color: var(--orange); }
+  .badge-replacement { background: #fef9c3; color: var(--yellow); }
+  .badge-region   { background: #dbeafe; color: var(--blue); }
+  .info-row { font-size: 13px; color: var(--gray-700); }
+  .info-row span { color: var(--gray-500); }
+
+  /* ── JD textarea ── */
+  #jd-textarea {
+    font-family: "SF Mono", "Menlo", "Consolas", monospace;
+    font-size: 13px;
+    min-height: 300px;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  /* ── Image upload ── */
+  #drop-zone {
+    border: 2px dashed var(--gray-300);
+    border-radius: var(--radius);
+    min-height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    padding: 16px;
+  }
+  #drop-zone:hover, #drop-zone.drag-over {
+    border-color: var(--green);
+    background: var(--green-light);
+  }
+  #drop-zone .dz-icon { font-size: 32px; }
+  #drop-zone .dz-text { font-size: 13px; color: var(--gray-500); }
+  #drop-zone .dz-sub { font-size: 12px; color: var(--gray-400); }
+  #image-preview {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    max-height: 220px;
+    border-radius: 4px;
+  }
+  #image-preview.visible { display: block; }
+  #file-input { display: none; }
+
+  /* ── Schedule row ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* ── Preview box ── */
+  #preview-box {
+    border: var(--border);
+    border-radius: var(--radius);
+    background: var(--gray-50);
+    padding: 14px;
+  }
+  #preview-box table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  #preview-box td {
+    padding: 5px 0;
+    vertical-align: top;
+  }
+  #preview-box td:first-child {
+    color: var(--gray-500);
+    width: 90px;
+    font-size: 12px;
+  }
+  #preview-box td:last-child {
+    color: var(--gray-900);
+    word-break: break-all;
+  }
+
+  /* ── Banner messages ── */
+  #banner {
+    display: none;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    align-items: center;
+    gap: 8px;
+  }
+  #banner.success { display: flex; background: var(--green-light); color: var(--green); border: 1px solid #a7f3c3; }
+  #banner.error   { display: flex; background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; flex-direction: column; align-items: flex-start; gap: 6px; }
+  #banner .retry-btn { font-size: 12px; text-decoration: underline; cursor: pointer; background: none; border: none; color: var(--red); padding: 0; }
+
+  /* ── Schedule button ── */
+  #schedule-btn {
+    width: 100%;
+    padding: 11px;
+    font-size: 15px;
+  }
+
+  /* ── Spinner ── */
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .spinner-dark {
+    border-color: rgba(26,122,66,0.3);
+    border-top-color: var(--green);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Fetch error ── */
+  #fetch-error {
+    display: none;
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 4px;
+  }
+  #fetch-error.visible { display: block; }
+
+  .remove-img-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+  }
+  #drop-zone:hover .remove-img-btn { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div id="topbar">
+  <div class="logo">CS</div>
+  <h1>Chate Sat — Job Poster</h1>
+</div>
+
+<!-- Main -->
+<div id="main">
+
+  <!-- Left Panel -->
+  <div class="panel" id="left-panel">
+
+    <!-- Notion Fetch -->
+    <div>
+      <div class="section-label">Job Details</div>
+      <label for="notion-url">Notion Page URL</label>
+      <div id="fetch-row">
+        <input type="url" id="notion-url" placeholder="https://www.notion.so/..." autocomplete="off" />
+        <button class="btn btn-green" id="fetch-btn" onclick="fetchJob()">Fetch</button>
+      </div>
+      <div id="fetch-error">⚠ Fetch failed. Check the URL and try again.</div>
+    </div>
+
+    <!-- Info Block -->
+    <div id="info-block">
+      <div id="job-title-display">—</div>
+      <div class="badges">
+        <span id="badge-status" class="badge"></span>
+        <span id="badge-region" class="badge badge-region"></span>
+      </div>
+      <div class="info-row"><span>Salary:</span> <strong id="info-salary">—</strong></div>
+      <div class="info-row"><span>Level:</span> <strong id="info-level">—</strong></div>
+    </div>
+
+    <!-- JD Textarea -->
+    <div>
+      <label for="jd-textarea">Job Description <span style="color:var(--gray-400);font-weight:400">(editable)</span></label>
+      <textarea id="jd-textarea" placeholder="JD content will appear here after fetching..." oninput="validateForm()"></textarea>
+    </div>
+
+  </div>
+
+  <!-- Right Panel -->
+  <div class="panel" id="right-panel">
+
+    <!-- Image Upload -->
+    <div>
+      <div class="section-label">Post Settings</div>
+      <label>Image (Canva export)</label>
+      <div id="drop-zone"
+        ondragover="onDragOver(event)"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event)"
+        onclick="onDropZoneClick(event)"
+      >
+        <div id="dz-content">
+          <div class="dz-icon">🖼</div>
+          <div class="dz-text">Drag & drop image here</div>
+          <div class="dz-sub">or click to pick a file (PNG / JPG)</div>
+        </div>
+        <img id="image-preview" alt="preview" />
+        <button class="remove-img-btn" id="remove-img-btn" onclick="removeImage(event)">✕ Remove</button>
+      </div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg" onchange="onFileSelect(event)" />
+    </div>
+
+    <!-- Schedule -->
+    <div>
+      <label>Schedule</label>
+      <div class="two-col">
+        <div>
+          <input type="date" id="schedule-date" onchange="validateForm(); updatePreview()" />
+        </div>
+        <div>
+          <input type="time" id="schedule-time" value="19:00" onchange="validateForm(); updatePreview()" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Channel 2 Link -->
+    <div>
+      <label for="ch2-link">Channel 2 — JD post link</label>
+      <input type="url" id="ch2-link" placeholder="https://t.me/chatesatjobs2/191" oninput="validateForm(); updatePreview()" />
+      <div class="hint">Channel 2 မှာ တင်မည့် post ရဲ့ link ထည့်ပါ</div>
+    </div>
+
+    <!-- Apply Link -->
+    <div>
+      <label for="apply-link">အလုပ်လျှောက်ရန် link</label>
+      <input type="url" id="apply-link" value="https://t.me/chatesatjobs/62" oninput="validateForm(); updatePreview()" />
+      <div class="hint">Default link — လိုအပ်ရင် ပြင်နိုင်သည်</div>
+    </div>
+
+    <!-- Preview -->
+    <div>
+      <label>Preview</label>
+      <div id="preview-box">
+        <table>
+          <tr>
+            <td>Channel 1</td>
+            <td id="pv-ch1">Image + caption + links</td>
+          </tr>
+          <tr>
+            <td>Channel 2</td>
+            <td id="pv-ch2">JD full text</td>
+          </tr>
+          <tr>
+            <td>Schedule</td>
+            <td id="pv-schedule">—</td>
+          </tr>
+          <tr>
+            <td>JD link</td>
+            <td id="pv-jdlink" style="color:var(--gray-400)">—</td>
+          </tr>
+          <tr>
+            <td>Apply link</td>
+            <td id="pv-applylink" style="color:var(--gray-400)">https://t.me/chatesatjobs/62</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Banner -->
+    <div id="banner"></div>
+
+    <!-- Schedule Button -->
+    <button class="btn btn-green" id="schedule-btn" onclick="postJob()" disabled>
+      Schedule လုပ်မည်
+    </button>
+
+  </div>
+</div>
+
+<script>
+  // ── Constants ──
+  const FETCH_WEBHOOK_URL = 'https://n8n.novamarketingmm.com/webhook/chatesat-fetch';
+  const POST_WEBHOOK_URL  = 'https://n8n.novamarketingmm.com/webhook/chatesat-post';
+
+  // ── State ──
+  let state = {
+    fetched: false,
+    jobTitle: '',
+    imageFile: null,
+  };
+
+  // ── Init ──
+  (function init() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const y = tomorrow.getFullYear();
+    const m = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const d = String(tomorrow.getDate()).padStart(2, '0');
+    document.getElementById('schedule-date').value = `${y}-${m}-${d}`;
+    updatePreview();
+  })();
+
+  // ── Fetch Job ──
+  async function fetchJob() {
+    const url = document.getElementById('notion-url').value.trim();
+    if (!url) return;
+
+    setFetchLoading(true);
+    hideError();
+
+    try {
+      const res = await fetch(FETCH_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notion_url: url }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      populateFetch(data);
+    } catch (err) {
+      showFetchError();
+    } finally {
+      setFetchLoading(false);
+    }
+  }
+
+  function setFetchLoading(on) {
+    const btn = document.getElementById('fetch-btn');
+    const input = document.getElementById('notion-url');
+    if (on) {
+      btn.innerHTML = '<span class="spinner"></span>';
+      btn.disabled = true;
+      input.disabled = true;
+    } else {
+      btn.innerHTML = 'Fetch';
+      btn.disabled = false;
+      input.disabled = false;
+    }
+  }
+
+  function populateFetch(data) {
+    state.fetched = true;
+    state.jobTitle = data.job_title || '';
+
+    document.getElementById('job-title-display').textContent = data.job_title || '—';
+    document.getElementById('info-salary').textContent = data.salary || '—';
+    document.getElementById('info-level').textContent  = data.level  || '—';
+
+    // Status badge
+    const statusEl = document.getElementById('badge-status');
+    const s = (data.status || '').toLowerCase();
+    statusEl.textContent = data.status || '';
+    statusEl.className = 'badge ' + (
+      s === 'urgent'      ? 'badge-urgent'      :
+      s === 'replacement' ? 'badge-replacement' :
+                            'badge-normal'
+    );
+
+    // Region badge
+    const regionEl = document.getElementById('badge-region');
+    regionEl.textContent = data.region || '';
+    regionEl.style.display = data.region ? '' : 'none';
+
+    // JD
+    document.getElementById('jd-textarea').value = data.jd_content || '';
+
+    document.getElementById('info-block').classList.add('visible');
+    validateForm();
+    updatePreview();
+  }
+
+  function showFetchError() {
+    document.getElementById('fetch-error').classList.add('visible');
+  }
+  function hideError() {
+    document.getElementById('fetch-error').classList.remove('visible');
+  }
+
+  // ── Image Upload ──
+  function onDropZoneClick(e) {
+    if (e.target.id === 'remove-img-btn') return;
+    document.getElementById('file-input').click();
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.add('drag-over');
+  }
+  function onDragLeave() {
+    document.getElementById('drop-zone').classList.remove('drag-over');
+  }
+  function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadImage(file);
+  }
+  function onFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) loadImage(file);
+  }
+
+  function loadImage(file) {
+    state.imageFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const preview = document.getElementById('image-preview');
+      const dzContent = document.getElementById('dz-content');
+      preview.src = e.target.result;
+      preview.classList.add('visible');
+      dzContent.style.display = 'none';
+      validateForm();
+      updatePreview();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage(e) {
+    e.stopPropagation();
+    state.imageFile = null;
+    const preview = document.getElementById('image-preview');
+    preview.src = '';
+    preview.classList.remove('visible');
+    document.getElementById('dz-content').style.display = '';
+    document.getElementById('file-input').value = '';
+    validateForm();
+    updatePreview();
+  }
+
+  // ── Validation ──
+  function validateForm() {
+    const jd       = document.getElementById('jd-textarea').value.trim();
+    const date     = document.getElementById('schedule-date').value;
+    const time     = document.getElementById('schedule-time').value;
+    const ch2link  = document.getElementById('ch2-link').value.trim();
+
+    const ready = state.fetched && jd && state.imageFile && date && time && ch2link;
+    document.getElementById('schedule-btn').disabled = !ready;
+  }
+
+  // ── Preview ──
+  function updatePreview() {
+    const date    = document.getElementById('schedule-date').value;
+    const time    = document.getElementById('schedule-time').value;
+    const ch2link = document.getElementById('ch2-link').value.trim();
+    const apply   = document.getElementById('apply-link').value.trim();
+
+    const pvSchedule = document.getElementById('pv-schedule');
+    if (date && time) {
+      pvSchedule.textContent = `${date} · ${time}`;
+    } else {
+      pvSchedule.textContent = '—';
+    }
+
+    const pvJd = document.getElementById('pv-jdlink');
+    pvJd.textContent = ch2link || '—';
+    pvJd.style.color = ch2link ? '' : 'var(--gray-400)';
+
+    const pvApply = document.getElementById('pv-applylink');
+    pvApply.textContent = apply || '—';
+  }
+
+  // ── Post Job ──
+  async function postJob() {
+    setPosting(true);
+    hideBanner();
+
+    const jd        = document.getElementById('jd-textarea').value;
+    const dateVal   = document.getElementById('schedule-date').value;
+    const timeVal   = document.getElementById('schedule-time').value;
+    const ch2link   = document.getElementById('ch2-link').value.trim();
+    const applyLink = document.getElementById('apply-link').value.trim();
+
+    // Build ISO string with +06:30 offset
+    const scheduleISO = `${dateVal}T${timeVal}:00+06:30`;
+
+    const form = new FormData();
+    form.append('image',         state.imageFile, state.imageFile.name);
+    form.append('job_title',     state.jobTitle);
+    form.append('jd_content',    jd);
+    form.append('channel2_link', ch2link);
+    form.append('apply_link',    applyLink);
+    form.append('schedule_time', scheduleISO);
+
+    try {
+      const res = await fetch(POST_WEBHOOK_URL, {
+        method: 'POST',
+        body: form,
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.success === false) throw new Error(data.message || 'Unknown error');
+
+      showSuccess(dateVal, timeVal);
+    } catch (err) {
+      showErrorBanner(err.message || 'Post failed');
+    } finally {
+      setPosting(false);
+    }
+  }
+
+  function setPosting(on) {
+    const btn = document.getElementById('schedule-btn');
+    const inputs = document.querySelectorAll('input, textarea, button');
+    if (on) {
+      btn.innerHTML = '<span class="spinner"></span> Posting...';
+      btn.disabled = true;
+      inputs.forEach(el => { if (el.id !== 'schedule-btn') el.disabled = true; });
+    } else {
+      btn.innerHTML = 'Schedule လုပ်မည်';
+      inputs.forEach(el => { el.disabled = false; });
+      validateForm();
+    }
+  }
+
+  function showSuccess(date, time) {
+    const banner = document.getElementById('banner');
+    banner.className = 'success';
+    banner.innerHTML = `✅ Schedule လုပ်ပြီးပြီ! ${date} · ${time} မှာ တက်မည်`;
+    banner.style.display = 'flex';
+  }
+
+  function showErrorBanner(msg) {
+    const banner = document.getElementById('banner');
+    banner.className = 'error';
+    banner.innerHTML = `
+      <div>⚠ Error: ${escHtml(msg)}</div>
+      <button class="retry-btn" onclick="postJob()">Retry →</button>
+    `;
+    banner.style.display = 'flex';
+  }
+
+  function hideBanner() {
+    const banner = document.getElementById('banner');
+    banner.style.display = 'none';
+    banner.className = '';
+    banner.innerHTML = '';
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // Allow Enter key on Notion URL input to trigger fetch
+  document.getElementById('notion-url').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') fetchJob();
+  });
+</script>
+</body>
+</html>
